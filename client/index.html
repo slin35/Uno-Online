@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    
+    <title>Uno Online</title>
+  </head>
+  <body>
+
+    <header class="site-header">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <div class="container">
+            <a class="navbar-brand mr-4" href="/">Uno Online</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link" href="/">Home</a>
+                <a class="nav-item nav-link" href="about">About</a>
+                </div>
+                <!-- Navbar Right Side -->
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="/" id="login">Login</a>
+                    <a class="nav-item nav-link" href="/" id="register">Register</a>
+                </div>
+            </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" id="signDiv">
+        <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" class="form-control" id="username" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+        <label for="pwd">Password:</label>
+        <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+        </div>
+        <div class="checkbox">
+        <label><input type="checkbox" name="remember"> Remember me</label>
+        </div>
+        
+        <button id="signin" class="btn btn-default">Sign In</button>
+        <button id="signup" class="btn btn-default">Sign Up</button>  
+    </div>
+
+    <div class="container" id="setupDiv" style="display:none;">
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+    </div>
+
+    <div id="gameDiv" style="display:none;">
+        
+        <div id="game" height="600" width="800" style="position:relative;">
+            <canvas id="canvas" height="600" width="800" style="position:absolute;left:30px;top:30px;border:2px solid #000000;" ></canvas>
+        
+            <div id="ui" style="position:absolute;width:800px;height:600px">
+            
+            </div>
+            
+        </div>
+
+        <div id="belowGame" style="margin-top: 630px">
+            <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+                <div></div>
+            </div>
+
+            <form id="chat-form">
+                <input id="chat-input" type="text" style="width: 500px"></input>
+            </form>
+        </div>    
+    
+    </div>
+  
+
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="/client/js/grid.js"></script>
+    <script src="/client/js/box.js"></script>
+    <script src="/client/js/sound.js"></script>
+    <script src="/client/js/player.js"></script>
+    <script src="/client/js/image.js"></script>
+    <script>
+        var socket = io();
+
+        // sign in and sign up
+        var user = document.getElementById("username");
+        var pwd = document.getElementById("pwd");
+        var signIn = document.getElementById("signin");
+        var signUp = document.getElementById("signup");
+
+        signIn.onclick = function(){
+            socket.emit('signIn', {username:user.value, password:pwd.value});
+        }
+
+        signUp.onclick = function(){
+            socket.emit('signUp', {username:user.value, password:pwd.value});
+        }
+
+        socket.on('signInResponse', function(data){
+            if (data.success) {
+                signDiv.style.display = 'none';
+           //     gameDiv.style.display = 'inline-block';
+                setupDiv.style.display = 'inline-block';
+                document.getElementById("login").innerHTML = user.value;
+                document.getElementById("register").innerHTML = "Logout";
+            }
+            else {
+                alert("Sign in unsucessfull.");
+            }
+        });
+
+        socket.on('signUpResponse', function(data){
+            if (data.success){
+                alert("Sign up successful");
+            }
+            else {
+                alert("Sign up unsuccessful");
+            }
+        });
+
+        // chat forum
+        var chat_form = document.getElementById("chat-form");
+        var chat_input = document.getElementById("chat-input");
+        var chat_text = document.getElementById("chat-text");
+
+        // update chat box
+        socket.on('addToChat', function(data){
+            chat_text.innerHTML += '<div>' + data + '</div>';
+        });
+
+        chat_form.onsubmit = function(e) {
+            e.preventDefault();
+            if (chat_input.value[0] === '@'){
+                socket.emit('sendPmToServer', {
+                    username:chat_input.value.slice(1, chat_input.value.indexOf(' ')),
+                    message:chat_input.value.slice(chat_input.value.indexOf(' ')+1)
+                });
+            }
+            else 
+                socket.emit('sendMsgToServer', {username: user.value, input: chat_input.value});
+            chat_input.value = '';
+        }
+        
+        // set up canvas
+        var ctx = document.getElementById("canvas").getContext("2d");
+        ctx.font = '30px Arial';
+
+        // set up sounds
+        var s = new sound("client/sounds/cardPlace1.wav");
+
+
+        // set up player state in game 
+        var selfId = undefined;
+
+        socket.on('init', function(data){
+            if (data.selfId){
+                selfId = data.selfId;
+            }
+                
+            for (var i = 0; i < data.player.length; i++){
+                var pack = data.player[i];
+                new Player(pack);
+            }
+        });
+
+        socket.on('update', function(data){
+            for (var i = 0; i < data.player.length; i++){
+                var pack = data.player[i];
+                var player = Player.list[pack.id];
+                if (player){
+                    if (pack.cards != undefined){
+                        player.cards = pack.cards;
+                    }
+                    if (pack.cardPlayed != undefined){
+                        player.cardPlayed = pack.cardPlayed;
+                    }
+                }
+            }
+        });
+
+        socket.on('remove', function(data){
+            for (var i = 0; i < data.player.length; i++){
+                delete Player.list[data.player[i]];
+            }
+        });
+
+        // set up grid and img
+        var grid_size = 50;
+        var grid_width = 800;
+        var grid_height = 600;
+        var grid = Grid(grid_width, grid_height, grid_size);
+        
+
+        var img_width = 90;
+        var img_height = 138;
+        var img_y = 400;
+
+
+        function setupGrid(){
+            grid.cleanUp();
+            if (!selfId)
+                return;
+            var boxes = listOfBoxes(Player.list, selfId, grid_width, img_y, img_width, img_height);
+            for (var i = 0; i < boxes.length; i++){
+                grid.setValForBox(boxes[i]);
+            }
+        }
+
+        // get current total numeber cards
+        var deckNum = 112;
+        socket.on('deckNum', function(data){
+            deckNum = data;
+        });
+
+        // mouseclick event and get current mouse position 
+        var currentX = 0, currentY = 0;
+        var canvasOffsetX = -32, canvasOffsetY = -115;
+
+        var flag = 1;
+
+        document.onmousedown = function(event){
+            if (flag == 1){
+                if (selfId){
+        
+                    currentX = event.clientX+canvasOffsetX;
+                    currentY = event.clientY+canvasOffsetY;
+        
+                    if (currentX>=0 && currentX<=800 && currentY>=0 && currentY <= 600
+                        && Player.list[selfId].cards.length > 0){
+                        var val = grid.getCardVal(currentX, currentY);
+                        if (val == -1 && currentY>=300 && currentY<=500)
+                            val = grid.getCardVal(currentX, 500);
+                        Player.list[selfId].cardPlayed = val;
+                  //      console.log(currentX + "    "+currentY + "  " + val);  
+                        socket.emit('play', {cardVal: val, playerID: selfId})
+                        if (val > 0)
+                            s.play();
+
+                    }
+
+                }
+            }
+            
+        }
+
+    /*    ctx.canvas.addEventListener('mousemove', function(event){
+            var mouseX = event.clientX - ctx.canvas.offsetLeft;
+            var mouseY = event.clientY - ctx.canvas.offsetTop;
+            if (mouseX >= 0 && mouseX <= 800 && mouseY >= 0 && mouseY <= 600 && selfId)
+                socket.emit('play_request', selfId);
+        }); */
+
+        socket.on('play_response', function(data){
+            ctx.fillStyle = 'black';
+            if (data.state) {
+                flag = 1;
+            }
+            else {
+                flag = 0;
+            }
+        });
+
+        var cardPlayed;
+
+        socket.on('lastCard', function(data){
+            cardPlayed = data;
+        });
+
+        // UI
+
+        document.oncontextmenu = function(event){
+            event.preventDefault();
+        }
+        //----------------------------------------------------------
+
+        setInterval(function(){
+            if (!selfId)
+                return;
+
+            setupGrid();
+            ctx.clearRect(0, 0, 800, 600);
+            drawBg();
+            
+            drawImages(Player.list[selfId].cards,);
+            drawTotalCardNum(deckNum);
+
+            if (cardPlayed > 0)
+                drawCardPlayed(cardPlayed);
+
+            drawOtherPlayers(grid_width, Player.list, selfId); 
+        }, 40);
+
+
+        
+    
+    </script>
+
+     <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
