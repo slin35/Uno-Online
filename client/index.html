@@ -54,12 +54,38 @@
     </div>
 
     <div class="container" id="setupDiv" style="display:none;">
-        <button>2</button>
-        <button>3</button>
-        <button>4</button>
+
+        <div class="form-group">
+        <label for="room">Room number:</label>
+        <input type="text" class="form-control" id="room" placeholder="Enter room number">
+        </div>
+
+        <button id="enterRoom" class="btn btn-default">Enter Room</button>
+        
+        
+        <div style="margin:20px;">
+            <p><b>OR</b></p>
+        </div>
+
+        <div class="form-group">
+            <label for="select">Select the number of players</label>
+            <select class="form-control" id="selectNumOfoPlayer">
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+        </div>
+
+        <button id="createRoom" class="btn btn-default">Create Room</button>
+
     </div>
 
     <div id="gameDiv" style="display:none;">
+
+        <div>
+            <p id="drawRoomNumber"></p>
+        </div>
         
         <div id="game" height="600" width="800" style="position:relative;">
             <canvas id="canvas" height="600" width="800" style="position:absolute;left:30px;top:30px;border:2px solid #000000;" ></canvas>
@@ -128,6 +154,35 @@
             }
         });
 
+        // create or enter room
+        var roomNumber = document.getElementById("room");
+        var enterRoom = document.getElementById("enterRoom");
+        var createRoom = document.getElementById("createRoom");
+        var numPlayer = document.getElementById("selectNumOfoPlayer");
+
+        enterRoom.onclick = function(){
+           // console.log(roomNumber.value);
+            socket.emit('enterRoom', roomNumber.value);
+        }
+
+        socket.on('enterRoomResponse', function(data){
+            if (data.state){
+                gameDiv.style.display = 'inline-block';
+                setupDiv.style.display = 'none';
+            }
+            else{
+                alert("Room " + roomNumber.value + " doesn't exist");
+            }
+        });
+
+        createRoom.onclick = function(){
+        //    console.log(numPlayer.value);
+            gameDiv.style.display = 'inline-block';
+            setupDiv.style.display = 'none';
+            socket.emit('createRoom', numPlayer.value);
+        }
+        
+
         // chat forum
         var chat_form = document.getElementById("chat-form");
         var chat_input = document.getElementById("chat-input");
@@ -161,10 +216,15 @@
 
         // set up player state in game 
         var selfId = undefined;
+        var selfRoom = undefined;
 
         socket.on('init', function(data){
             if (data.selfId){
                 selfId = data.selfId;
+            }
+            if (data.selfRoom){
+                selfRoom = data.selfRoom;
+                document.getElementById("drawRoomNumber").innerHTML = "Enter Room "+selfRoom;
             }
                 
             for (var i = 0; i < data.player.length; i++){
@@ -220,7 +280,7 @@
         var deckNum = 112;
         socket.on('deckNum', function(data){
             deckNum = data;
-        });
+        }); 
 
         // mouseclick event and get current mouse position 
         var currentX = 0, currentY = 0;
@@ -291,13 +351,15 @@
             ctx.clearRect(0, 0, 800, 600);
             drawBg();
             
-            drawImages(Player.list[selfId].cards,);
-            drawTotalCardNum(deckNum);
+            drawImages(Player.list[selfId].cards);
+          //  drawTotalCardNum(deckNum);
+            drawTotalCardNum(Player.list[selfId].deck.cards.length);
 
             if (cardPlayed > 0)
                 drawCardPlayed(cardPlayed);
 
-            drawOtherPlayers(grid_width, Player.list, selfId); 
+            drawOtherPlayers(grid_width, Player.list, selfId, selfRoom); 
+
         }, 40);
 
 

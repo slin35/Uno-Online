@@ -36,7 +36,8 @@ var drawTotalCardNum = function(deckNum){
   //  ctxUi.drawImage(img, 0, 40);
 }
 
-var drawOtherPlayers = function(grid_width, player_list, selfId){
+
+var drawOtherPlayers = function(grid_width, player_list, selfId, selfRoom){
     var len = 0;
     for (var i in Player.list)
         len++;
@@ -51,11 +52,11 @@ var drawOtherPlayers = function(grid_width, player_list, selfId){
     var c = 0;
     for (var i in player_list){
         var player = player_list[i];
-        if (player.id != selfId){
+        if (player.id != selfId && player.room == selfRoom){
             drawPlayerCards(arr[c], 10, player.cards.length);
             c++;
         }
-    }
+    } 
 }
 
 var drawPlayerCards = function(x, y, cardNum){

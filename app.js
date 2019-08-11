@@ -31,7 +31,7 @@ console.log("Server started.");
 // create a deck of 112 cards
 var deck = Deck();
 deck.initCards();
-deck.shuffleCards();
+deck.shuffleCards(); 
 
 
 
@@ -83,7 +83,6 @@ setInterval(function(){
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
         var pack = Player.getPacks();
-        socket.emit('deckNum', deck.cards.length);
         socket.emit('init', pack.initPack);
         socket.emit('update', pack.updatePack);
         socket.emit('remove', pack.removedPack);

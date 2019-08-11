@@ -4,6 +4,8 @@ var Player = function(initPack){
     self.username = initPack.username;
     self.cards = initPack.cards;
     self.cardPlayed = -1;
+    self.room = initPack.room;
+    self.deck = initPack.deck;
 
     Player.list[self.id] = self;
 
