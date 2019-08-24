@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    
+    <title>Uno Online</title>
+  </head>
+  <body>
+
+    <header class="site-header">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <div class="container">
+            <a class="navbar-brand mr-4" href="/">Uno Online</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link" href="/">Home</a>
+                <a class="nav-item nav-link" href="about">About</a>
+                </div>
+                <!-- Navbar Right Side -->
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="/" id="login">Login</a>
+                    <a class="nav-item nav-link" href="/" id="register">Register</a>
+                </div>
+            </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" id="signDiv">
+        <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" class="form-control" id="username" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+        <label for="pwd">Password:</label>
+        <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+        </div>
+        <div class="checkbox">
+        <label><input type="checkbox" name="remember"> Remember me</label>
+        </div>
+        
+        <button id="signin" class="btn btn-default">Sign In</button>
+        <button id="signup" class="btn btn-default">Sign Up</button>  
+    </div>
+
+    <div class="container" id="setupDiv" style="display:none;">
+
+        <div class="form-group">
+        <label for="room">Room number:</label>
+        <input type="text" class="form-control" id="room" placeholder="Enter room number">
+        </div>
+
+        <button id="enterRoom" class="btn btn-default">Enter Room</button>
+        
+        
+        <div style="margin:20px;">
+            <p><b>OR</b></p>
+        </div>
+
+        <div class="form-group">
+            <label for="select">Select the number of players</label>
+            <select class="form-control" id="selectNumOfoPlayer">
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+        </div>
+
+        <button id="createRoom" class="btn btn-default">Create Room</button>
+
+    </div>
+
+    <div id="gameDiv" style="display:none;">
+
+        <div>
+            <p id="drawRoomNumber"></p>
+        </div>
+        
+        <div id="game" height="600" width="800" style="position:relative;">
+            <canvas id="canvas" height="600" width="800" style="position:absolute;left:30px;top:30px;border:2px solid #000000;" ></canvas>
+        
+            <div id="ui" style="position:absolute;width:800px;height:620px">
+                <button onclick="drawACard()" style="background-color:#4CAF50;position:absolute;bottom:0px;left:400px" class="btn btn-default">draw a card</button>
+            </div>
+
+
+            <div id="modal" style="display:none;position:absolute;width:800px;height:420px">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" style="position:absolute;bottom:0px;left:400px">
+                    pick a color
+                </button>
+            </div>
+
+            <div id="cardModal" style="display:none;position:absolute;width:800px;height:420px">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal2" style="position:absolute;bottom:0px;left:350px">
+                    Customize your card
+                </button>
+            </div>
+            
+        </div>
+
+        <div id="belowGame" style="margin-top: 650px">
+            <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+                <div></div>
+            </div>
+
+            <form id="chat-form">
+                <input id="chat-input" type="text" style="width: 500px"></input>
+            </form>
+        </div>    
+    
+    </div>
+
+     
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Choose a color for your card</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="select">Select color</label>
+                <select class="form-control" id="selectColor">
+                    <option>Red</option>
+                    <option>Blue</option>
+                    <option>Green</option>
+                    <option>Yellow</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="saveColor">Save changes</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal2" tabindex="-1" role="dialog" aria-labelledby="modal2Label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal2Label">Customize your card</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="select">Select functionality</label>
+                        <select class="form-control" id="selectFunctionality">
+                            <option>None</option>
+                            <option>Skip</option>
+                            <option>Reverse</option>
+                            <option>Draw2</option>
+                            <option>Draw4</option>
+                            <option>Wild</option>
+                        </select>
+                        <label for="select">Select color</label>
+                        <select class="form-control" id="selectColor2">
+                            <option>None</option>
+                            <option>Red</option>
+                            <option>Blue</option>
+                            <option>Green</option>
+                            <option>Yellow</option>
+                        </select>
+                        <label for="select">Select number</label>
+                        <select class="form-control" id="selectNumber">
+                            <option>None</option>
+                            <option>0</option>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveCard">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="/client/js/grid.js"></script>
+    <script src="/client/js/draw.js"></script>
+    <script src="/client/js/sound.js"></script>
+    <script src="/client/js/box.js"></script>
+    <script src="/client/js/card.js"></script>
+    <script>
+        var socket = io();
+
+        // sign in and sign up
+        var user = document.getElementById("username");
+        var pwd = document.getElementById("pwd");
+        var signIn = document.getElementById("signin");
+        var signUp = document.getElementById("signup");
+
+        signIn.onclick = function(){
+            socket.emit('signIn', {username:user.value, password:pwd.value});
+        }
+
+        signUp.onclick = function(){
+            socket.emit('signUp', {username:user.value, password:pwd.value});
+        }
+
+        socket.on('signInResponse', function(data){
+            if (data.success) {
+                signDiv.style.display = 'none';
+                setupDiv.style.display = 'inline-block';
+                document.getElementById("login").innerHTML = user.value;
+                document.getElementById("register").innerHTML = "Logout";
+            }
+            else {
+                alert("Sign in unsucessfull.");
+            }
+        });
+
+        socket.on('signUpResponse', function(data){
+            if (data.success){
+                alert("Sign up successful");
+            }
+            else {
+                alert("Sign up unsuccessful");
+            }
+        });
+
+        // create or enter room
+        var roomNumber = document.getElementById("room");
+        var enterRoom = document.getElementById("enterRoom");
+        var createRoom = document.getElementById("createRoom");
+        var numPlayer = document.getElementById("selectNumOfoPlayer");
+
+        enterRoom.onclick = function(){
+            socket.emit('enterRoom', roomNumber.value);
+        }
+
+        socket.on('enterRoomResponse', function(data){
+            if (data.success){
+                gameDiv.style.display = 'inline-block';
+                setupDiv.style.display = 'none';
+            }
+            else{
+                alert("Room " + roomNumber.value + " doesn't exist");
+            }
+        });
+
+        createRoom.onclick = function(){
+            gameDiv.style.display = 'inline-block';
+            setupDiv.style.display = 'none';
+            socket.emit('createRoom', numPlayer.value);
+        }
+
+        // set up rooms
+        var room_list;
+        var selfRoomID;
+        var selfPlayerID;
+
+        socket.on('newRoom', function(data){
+            room_list = data;
+        });
+
+        socket.on('curRoom', function(data){
+            selfRoomID = data;
+        });
+
+        socket.on('curPlayer', function(data){
+            selfPlayerID = data;
+        });
+
+        // set up canvas
+        var ctx = document.getElementById("canvas").getContext("2d");
+        ctx.font = '30px Arial';
+
+        // set up sounds
+        var s = new sound("client/sounds/cardPlace1.wav");
+
+        // set up grid and img
+        var grid_size = 50;
+        var grid_width = 800;
+        var grid_height = 600;
+        var grid = Grid(grid_width, grid_height, grid_size);
+        
+
+        var img_width = 90;
+        var img_height = 138;
+        var img_y = 400;
+
+        function setupGrid(){
+            grid.cleanUp();
+            var boxes = listOfBoxes(room_list[selfRoomID].players, selfPlayerID, grid_width, img_y, img_width, img_height);
+            for (var i = 0; i < boxes.length; i++){
+                grid.setValForBox(boxes[i]);
+            }
+        }
+
+        // mouseclick event and get current mouse position 
+        var currentX = 0, currentY = 0;
+        var canvasOffsetX = -32, canvasOffsetY = -125;
+        var gameStarted = false, gameOver = false;
+
+        
+        document.onmousedown = function(event){
+            if (gameStarted && selfPlayerID){
+                if (!room_list[selfRoomID])
+                    return;
+
+                currentX = event.clientX+canvasOffsetX;
+                currentY = event.clientY+canvasOffsetY;
+
+                if (currentX>= 0 && currentX <= 800 && currentY>=0 && currentY<=600
+                    && room_list[selfRoomID].players[selfPlayerID].cards.length > 0){
+                        var val = grid.getCardVal(currentX, currentY);
+                        var turn = room_list[selfRoomID].player_order[room_list[selfRoomID].player_turn];
+                        if (val > 0)
+                            socket.emit('play', {cardVal: val, roomID: selfRoomID, playerID: selfPlayerID})
+                    //    console.log(currentX + "    "+currentY + "  " + val);
+                        if (val > 0 && turn == selfPlayerID){
+                            s.play();
+                        }
+                }
+
+            }
+        }
+
+        // UI
+        var drawACard = function(){
+            socket.emit('drawACard', {playerID: selfPlayerID, roomID: selfRoomID});
+        }
+
+        // modal for select color
+        var color = document.getElementById("selectColor");
+        var saveColor = document.getElementById("saveColor");
+        socket.on('selectColor', function(){
+            modal.style.display = 'inline-block';
+        });
+
+        saveColor.onclick = function(){
+            socket.emit('selectColorResponse', {color:color.value, roomID:selfRoomID});
+            modal.style.display = 'none';
+        }
+
+        // modal for a blank card
+        var functionality = document.getElementById("selectFunctionality");
+        var color2 = document.getElementById("selectColor2");
+        var number = document.getElementById("selectNumber");
+        var saveCard = document.getElementById("saveCard");
+
+        socket.on('selectCard', function(){
+            cardModal.style.display = 'inline-block';
+        });
+
+        saveCard.onclick = function(){
+            var card = new Card(functionality.value, color2.value, number.value);
+            if (card.value == null)
+                alert("invalid input");
+            else {
+                socket.emit('selectCardResponse', {value: card.value, roomID:selfRoomID, playerID:selfPlayerID});
+                cardModal.style.display = 'none';
+            }       
+        }
+
+        // chat forum
+        var chat_form = document.getElementById("chat-form");
+        var chat_input = document.getElementById("chat-input");
+        var chat_text = document.getElementById("chat-text");
+
+        chat_form.onsubmit = function(e) {
+            e.preventDefault();
+            if (chat_input.value[0] === '@'){
+                socket.emit('sendPmToServer', {
+                    username:chat_input.value.slice(1, chat_input.value.indexOf(' ')),
+                    message:chat_input.value.slice(chat_input.value.indexOf(' ')+1),
+                    sender: user.value
+                });
+            }
+            else 
+                socket.emit('sendMsgToServer', {username: user.value, input: chat_input.value, roomID: selfRoomID});
+            chat_input.value = '';
+        }
+
+        // update chat box
+        socket.on('addToChat', function(data){
+            chat_text.innerHTML += '<div>' + data + '</div>';
+        });
+
+        // prohibit right click
+        document.oncontextmenu = function(event){
+            event.preventDefault();
+        }
+        
+
+        // main
+        setInterval(function(){
+            if (!selfRoomID || !room_list || !selfPlayerID)
+                return;
+            if (!room_list[selfRoomID])
+                return;
+            if (!room_list[selfRoomID].players[selfPlayerID])
+                return;
+
+            
+
+            setupGrid();
+            ctx.clearRect(0, 0, 800, 600);
+            drawBg();
+
+            drawImages(room_list[selfRoomID].players[selfPlayerID].cards);
+
+            drawRoomNumber(selfRoomID);
+
+            drawTotalCardNum(room_list[selfRoomID].deck.cards.length);
+
+            drawCardPlayed(room_list[selfRoomID].cardPlayed);
+
+            
+
+            // set up game status
+           if (room_list[selfRoomID].playerNum == room_list[selfRoomID].capacity){
+               gameStarted = true;
+           }
+           else {
+               gameStarted = false;
+           }
+
+           if (room_list[selfRoomID].winner){
+                displayWinner(room_list, selfRoomID, selfPlayerID, room_list[selfRoomID].winner);
+                gameStarted = false;
+           }
+
+           if (gameStarted){
+                displayStatus(room_list, selfRoomID, selfPlayerID);
+                drawOtherPlayers(grid_width, room_list, selfRoomID, selfPlayerID);
+           }
+                
+        }, 40); 
+
+
+    
+    </script>
+
+     <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
