@@ -14,7 +14,7 @@ Database.isValidPassword = function(data, cb){
             return;
         }
 
-        var dbo = db.db('heroku_llzmb3p6');
+        var dbo = db.db('*************');
         var account = dbo.collection('account');
 
         account.findOne({username:data.username,password:data.password}, function(err, res){
@@ -39,7 +39,7 @@ Database.isUsernameTaken = function(data, cb){
             return;
         }
 
-        var dbo = db.db('heroku_llzmb3p6');
+        var dbo = db.db('*************');
         var account = dbo.collection('account');
         account.findOne({username:data.username}, function(err, res){
             if (res){
@@ -62,7 +62,7 @@ Database.addUser = function(socket, data, cb) {
             return;
         }
 
-        var dbo = db.db('heroku_llzmb3p6');
+        var dbo = db.db('*************');
         const account = dbo.collection('account');
         account.insertOne({username:data.username,password:data.password}, function(err, res){
             cb();
